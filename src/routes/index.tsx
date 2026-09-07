@@ -61,8 +61,8 @@ const TABS = [
 ];
 
 function Index() {
-  const [property, setProperty] = useState(PROPERTIES[0]);
-  const [role, setRole] = useState<string>(ROLES[0]);
+  const [property, setProperty] = useState<string>(PROPERTIES[0]!);
+  const [role, setRole] = useState<string>(ROLES[0]!);
   const [query, setQuery] = useState("");
   const [events, setEvents] = useState<EventEntry[]>(initialEvents);
   const [assets, setAssets] = useState<Asset[]>(seedAssets);

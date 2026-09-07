@@ -38,9 +38,9 @@ export default function Suppliers({
   onCreatePO: (po: Omit<PurchaseOrder, "id" | "createdAt" | "status">) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [supplierId, setSupplierId] = useState(allSuppliers[0].id);
+  const [supplierId, setSupplierId] = useState(allSuppliers[0]!.id);
   const [linkType, setLinkType] = useState<"Asset" | "Ticket">("Asset");
-  const [linkId, setLinkId] = useState(assets[0].id);
+  const [linkId, setLinkId] = useState(assets[0]!.id);
   const [amount, setAmount] = useState("25000");
 
   const linkOptions =
@@ -149,7 +149,7 @@ export default function Suppliers({
                 onValueChange={(v) => {
                   const t = v as "Asset" | "Ticket";
                   setLinkType(t);
-                  setLinkId(t === "Asset" ? assets[0].id : allTickets[0].id);
+                  setLinkId(t === "Asset" ? assets[0]!.id : allTickets[0]!.id);
                 }}
               >
                 <SelectTrigger className="!h-8 text-[12px]"><SelectValue /></SelectTrigger>

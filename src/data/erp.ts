@@ -52,7 +52,7 @@ export type Ticket = {
   department: string;
   slaMinutes: number;
   staffId: string;
-  assetId?: string;
+  assetId?: string | undefined;
   supplierIds: string[];
   description: string;
   history: { ts: string; actor: string; message: string }[];
