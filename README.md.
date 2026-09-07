@@ -1,0 +1,50 @@
+# OmniHotel OS | Enterprise Operations ERP & Ambient Middleware
+
+An enterprise-grade, high-density Property Management and Operations ERP engineered to eliminate manual data entry, optimize labor overhead, and maximize asset lifecycles. Inspired by industry-leading ServiceNow workflow design, **OmniHotel OS** introduces an "Invisible Operational Layer" that bridges real-world physical asset telemetries natively with predictive cloud analytics.
+
+## 🏗 Architectural Blueprint & Stack
+
+This platform features a fully decoupled, production-ready enterprise deployment pipeline:
+
+*   **Frontend Command Center:** Next.js 14 (App Router), TypeScript, Tailwind CSS, and shadcn/ui. Architected with an ultra-dense, slate-toned dark design system optimized for high-throughput Mission Critical operations.
+*   **Database Infrastructure:** Cloud-hosted Supabase PostgreSQL featuring strict relational integrity, branch isolation, and Row-Level Security (RLS) enforcement.
+*   **Automation Layer:** Native database-level PL/pgSQL triggers that offload compute overhead from the client to the database engine.
+*   **CI/CD Pipeline:** Automated integration loop cascading from Lovable AI IDE ➡️ GitHub Repository Version Streams ➡️ Vercel Edge Networks.
+
+---
+
+## 💡 Core Innovation Engines
+
+### 1. ServiceNow-Grade Incident Infrastructure
+Bypasses basic consumer "to-do lists" in favour of a high-density, mission-critical operations grid. Tracks custom 8-character hashed tracking entities (`#TKT-491C`) against multi-column matrices containing configuration item (CI) mappings, color-coded P1-Critical severity models, and live SLA breakdown metrics.
+
+### 2. Ambient IoT Telemetry & Trigger Automation
+Integrates edge-device emulation schemas directly into the relational core. When a physical asset sensor breaches a designated safe threshold marker, a backend PostgreSQL database trigger intercepts the event and autonomously dispatches an isolated P1-Critical incident ticket without human latency.
+
+### 3. Machine-to-Machine Procurement Logistics
+Lays the groundwork for autonomous asset supply-chains. The schema actively monitors stock depletion levels, queries vendor contract variables, and maintains dedicated append-only ledger entries tracking autonomous AI negotiation justifications and purchase order states.
+
+### 4. Immutable Event Logging
+Enforces 100% corporate accountability and data provenance. Every single operational state mutation (`INSERT` or `UPDATE`) across core functional tables bypasses the UI layer entirely to write unalterable, system-signed entries directly to the `audit_logs` ledger.
+
+---
+
+## 📊 Database Schema Topology
+
+The database engine drives relational normalization through five key entities:
+
+*   `profiles`: Centralized staff tracking mapping operational access scopes (`Admin`, `Procurement`, `Maintenance`, `Fleet Manager`).
+*   `suppliers`: Enterprise vendor index monitoring contract compliance ratings and primary contact strings.
+*   `assets`: Digital registry mapping physical property equipment infrastructure to corresponding hardware serial sequences.
+*   `tickets`: The core operational state engine handling task categories, department routing, and automated priorities.
+*   `iot_devices`: Edge telemetry monitors reading current vibration frequencies, temperatures, or utility inputs against threshold parameters.
+*   `audit_logs`: The immutable system ledger capturing historical transitions, state transformations, and actor signatures.
+
+---
+
+## 🚀 Live Demo & Simulation Workflow
+
+The architecture is explicitly configured to demonstrate live event-driven automation:
+1. **Normal State:** An operational hotel asset (e.g., *North Wing HVAC Chiller*) sits stably at a safe vibration reading (`42.50 Hz`).
+2. **Telemetry Breach:** A real-world or simulated edge event pushes a telemetry update to the `iot_devices` table, forcing the metric to `55.00 Hz` (exceeding its `50.00 Hz` safety threshold limit).
+3. **Autonomous Execution:** The backend trigger automatically escalates the device state to `Critical`, spins up a high-priority engineering lifecycle ticket, and transmits a real-time event notice across active WebSockets directly to the central dashboard grid.
