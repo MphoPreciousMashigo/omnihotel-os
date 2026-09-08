@@ -180,4 +180,5 @@ export function ErrorPanel({ error }: { error: unknown }) {
       database error · {msg}
     </div>
   );
-}
+}export { SlaClock as SlaChip };
+
