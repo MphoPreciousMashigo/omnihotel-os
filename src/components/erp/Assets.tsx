@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import { Gauge, Search } from "lucide-react";
+import { Plus, Wrench } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -19,166 +19,290 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mono, SectionHead, StatusBadge, assetTone } from "./shared";
-import { suppliers, type Asset } from "@/data/erp";
-import { cn } from "@/lib/utils";
+import {
+  ASSET_STATES,
+  createAsset,
+  shortId,
+  updateAsset,
+  type Asset,
+  type AssetStatus,
+  type IotDevice,
+  type Supplier,
+} from "@/lib/erp-db";
 
-const CATEGORIES = ["All", "Shuttle Vans", "HVAC Units", "Housekeeping Carts", "Bulk Linen"];
-const STATUSES = ["All", "Operational", "In Maintenance", "Out of Service", "Low Stock"];
-
-export default function Assets({
+export default function AssetsTab({
   assets,
-  onLog,
+  suppliers,
+  devices,
 }: {
   assets: Asset[];
-  onLog: (assetId: string, mileage: number, status: Asset["status"], note: string) => void;
+  suppliers: Supplier[];
+  devices: IotDevice[];
 }) {
-  const [cat, setCat] = useState("All");
-  const [status, setStatus] = useState("All");
-  const [q, setQ] = useState("");
-  const [active, setActive] = useState<Asset | null>(null);
-  const [mileage, setMileage] = useState("");
-  const [newStatus, setNewStatus] = useState<Asset["status"]>("Operational");
-  const [note, setNote] = useState("");
+  const [status, setStatus] = useState("all");
+  const [category, setCategory] = useState("all");
+  const [editing, setEditing] = useState<Asset | null>(null);
+  const [creating, setCreating] = useState(false);
 
-  const rows = useMemo(
-    () =>
-      assets.filter(
-        (a) =>
-          (cat === "All" || a.category === cat) &&
-          (status === "All" || a.status === status) &&
-          (q === "" ||
-            (a.item + a.id + a.location).toLowerCase().includes(q.toLowerCase())),
-      ),
-    [assets, cat, status, q],
+  const categories = useMemo(
+    () => Array.from(new Set(assets.map((a) => a.category).filter(Boolean) as string[])),
+    [assets],
+  );
+  const supplierById = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
+  const deviceByAsset = useMemo(
+    () => new Map(devices.map((d) => [d.related_asset_id ?? "", d])),
+    [devices],
   );
 
-  function open(a: Asset) {
-    if (a.category !== "Shuttle Vans") return;
-    setActive(a);
-    setMileage(String(a.mileage ?? 0));
-    setNewStatus(a.status);
-    setNote("");
-  }
+  const rows = assets
+    .filter((a) => (status === "all" ? true : a.status === status))
+    .filter((a) => (category === "all" ? true : a.category === category));
 
   return (
     <div className="space-y-3">
       <SectionHead
-        title="Asset & Fleet Tracking"
-        subtitle={`${rows.length} of ${assets.length} assets · vehicles are clickable for mileage logging`}
+        title="Configuration Item & Asset Register"
+        subtitle={`${rows.length} assets · edits commit straight to the database`}
         right={
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Filter assets…"
-                className="h-7 w-44 pl-7 text-[12px]"
-              />
-            </div>
-            <Select value={cat} onValueChange={setCat}>
-              <SelectTrigger className="!h-7 w-44 text-[12px]"><SelectValue /></SelectTrigger>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="!h-7 w-[160px] text-[12px]"><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c} className="text-[12px]">{c}</SelectItem>)}
+                <SelectItem value="all" className="text-[12px]">All categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c} className="text-[12px]">{c}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="!h-7 w-40 text-[12px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="!h-7 w-[170px] text-[12px]"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
-                {STATUSES.map((c) => <SelectItem key={c} value={c} className="text-[12px]">{c}</SelectItem>)}
+                <SelectItem value="all" className="text-[12px]">All states</SelectItem>
+                {ASSET_STATES.map((s) => (
+                  <SelectItem key={s} value={s} className="text-[12px]">{s}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <Button size="sm" className="h-7 gap-1 text-[12px]" onClick={() => setCreating(true)}>
+              <Plus className="h-3.5 w-3.5" /> New asset
+            </Button>
           </div>
         }
       />
 
       <div className="overflow-x-auto rounded-md border border-border bg-card">
-        <table className="w-full min-w-[900px] text-[12px]">
+        <table className="w-full min-w-[920px] text-[12px]">
           <thead className="bg-secondary/70 text-[10px] uppercase tracking-wider text-muted-foreground">
             <tr>
-              {["Asset UUID", "Category", "Item", "Status", "Linked supplier", "Location", "Mileage", "Last inspection"].map((h) => (
-                <th key={h} className="px-2.5 py-1.5 text-left font-semibold">{h}</th>
+              {["CI ID", "Item", "Category", "Serial", "State", "Vendor", "Sensor", "Updated", ""].map((h) => (
+                <th key={h} className="border-b border-border px-2.5 py-1.5 text-left font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((a) => {
-              const s = suppliers.find((x) => x.id === a.supplierId)!;
-              const clickable = a.category === "Shuttle Vans";
+              const dev = deviceByAsset.get(a.id);
               return (
-                <tr
-                  key={a.id}
-                  onClick={() => open(a)}
-                  className={cn(
-                    "border-t border-border",
-                    clickable ? "cursor-pointer hover:bg-accent/50" : "hover:bg-accent/25",
-                  )}
-                >
-                  <td className="px-2.5 py-1.5"><Mono className="font-semibold">{a.id}</Mono></td>
-                  <td className="px-2.5 py-1.5">{a.category}</td>
-                  <td className="px-2.5 py-1.5 font-medium">{a.item}</td>
-                  <td className="px-2.5 py-1.5"><StatusBadge tone={assetTone(a.status) as never}>{a.status}</StatusBadge></td>
-                  <td className="px-2.5 py-1.5">
-                    <span className="block">{s.name}</span>
-                    <Mono className="text-muted-foreground">{s.id}</Mono>
+                <tr key={a.id} className="border-b border-border/70 hover:bg-accent/50">
+                  <td className="px-2.5 py-1"><Mono className="font-semibold">CI-{shortId(a.id)}</Mono></td>
+                  <td className="px-2.5 py-1 font-medium">{a.name}</td>
+                  <td className="px-2.5 py-1">{a.category ?? "—"}</td>
+                  <td className="px-2.5 py-1"><Mono className="text-muted-foreground">{a.serial_number ?? "—"}</Mono></td>
+                  <td className="px-2.5 py-1">
+                    <StatusBadge tone={assetTone(a.status) as never}>{a.status}</StatusBadge>
                   </td>
-                  <td className="px-2.5 py-1.5 text-muted-foreground">{a.location}</td>
-                  <td className="px-2.5 py-1.5"><Mono>{a.mileage ? a.mileage.toLocaleString() + " km" : "—"}</Mono></td>
-                  <td className="px-2.5 py-1.5"><Mono className="text-muted-foreground">{a.lastInspection}</Mono></td>
+                  <td className="px-2.5 py-1">
+                    <Mono className="text-muted-foreground">
+                      {a.supplier_id ? (supplierById.get(a.supplier_id)?.name ?? "—") : "—"}
+                    </Mono>
+                  </td>
+                  <td className="px-2.5 py-1">
+                    {dev ? (
+                      <Mono className="text-info">{Number(dev.current_reading ?? 0).toFixed(2)} / {Number(dev.threshold_limit ?? 0).toFixed(2)}</Mono>
+                    ) : (
+                      <Mono className="text-muted-foreground">none</Mono>
+                    )}
+                  </td>
+                  <td className="px-2.5 py-1">
+                    <Mono className="text-muted-foreground">
+                      {new Date(a.updated_at).toLocaleString("en-ZA", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </Mono>
+                  </td>
+                  <td className="px-2.5 py-1 text-right">
+                    <Button size="sm" variant="outline" className="h-6 gap-1 text-[11px]" onClick={() => setEditing(a)}>
+                      <Wrench className="h-3 w-3" /> Update
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={8} className="px-2.5 py-6 text-center text-muted-foreground">No assets match the current filters.</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-[11px] text-muted-foreground">No assets match the filters</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-sm">
-              <Gauge className="h-4 w-4" /> Log Mileage &amp; Status
-            </DialogTitle>
-            <DialogDescription>
-              {active?.item} · <Mono>{active?.id}</Mono>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-[11px] uppercase tracking-wide">Odometer (km)</Label>
-              <Input value={mileage} onChange={(e) => setMileage(e.target.value)} inputMode="numeric" className="h-8 font-mono text-[12px]" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[11px] uppercase tracking-wide">Vehicle status</Label>
-              <Select value={newStatus} onValueChange={(v) => setNewStatus(v as Asset["status"])}>
-                <SelectTrigger className="!h-8 text-[12px]"><SelectValue /></SelectTrigger>
+      <UpdateAssetDialog asset={editing} onClose={() => setEditing(null)} suppliers={suppliers} />
+      <CreateAssetDialog open={creating} setOpen={setCreating} suppliers={suppliers} />
+    </div>
+  );
+}
+
+function UpdateAssetDialog({
+  asset,
+  onClose,
+  suppliers,
+}: {
+  asset: Asset | null;
+  onClose: () => void;
+  suppliers: Supplier[];
+}) {
+  const [status, setStatus] = useState<AssetStatus>("Operational");
+  const [supplierId, setSupplierId] = useState("none");
+  const [saving, setSaving] = useState(false);
+
+  const key = asset?.id ?? "none";
+
+  async function submit() {
+    if (!asset) return;
+    setSaving(true);
+    try {
+      await updateAsset(asset.id, {
+        status,
+        supplier_id: supplierId === "none" ? null : supplierId,
+        updated_at: new Date().toISOString(),
+      });
+      toast.success("Asset state committed", { description: `CI-${shortId(asset.id)} · ${status}` });
+      onClose();
+    } catch (e) {
+      toast.error("Update rejected", { description: (e as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={!!asset}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+        else if (asset) {
+          setStatus(asset.status);
+          setSupplierId(asset.supplier_id ?? "none");
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-md" key={key}>
+        {asset && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-[14px]">Update {asset.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Mono className="text-muted-foreground">CI-{shortId(asset.id)} · {asset.serial_number}</Mono>
+              <Select value={status} onValueChange={(v) => setStatus(v as AssetStatus)}>
+                <SelectTrigger className="!h-8 text-[12px]"><SelectValue placeholder="Operational state" /></SelectTrigger>
                 <SelectContent>
-                  {STATUSES.slice(1).map((s) => <SelectItem key={s} value={s} className="text-[12px]">{s}</SelectItem>)}
+                  {ASSET_STATES.map((s) => (
+                    <SelectItem key={s} value={s} className="text-[12px]">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={supplierId} onValueChange={setSupplierId}>
+                <SelectTrigger className="!h-8 text-[12px]"><SelectValue placeholder="Vendor" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none" className="text-[12px]">No vendor</SelectItem>
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id} className="text-[12px]">{s.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label className="text-[11px] uppercase tracking-wide">Inspection note</Label>
-              <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note for the audit log" className="h-8 text-[12px]" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setActive(null)}>Cancel</Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                if (!active) return;
-                onLog(active.id, Number(mileage) || active.mileage || 0, newStatus, note);
-                setActive(null);
-              }}
-            >
-              Submit to audit stream
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <DialogFooter>
+              <Button size="sm" className="h-7 text-[12px]" onClick={submit} disabled={saving}>
+                {saving ? "Committing…" : "Commit change"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CreateAssetDialog({
+  open,
+  setOpen,
+  suppliers,
+}: {
+  open: boolean;
+  setOpen: (o: boolean) => void;
+  suppliers: Supplier[];
+}) {
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [serial, setSerial] = useState("");
+  const [status, setStatus] = useState<AssetStatus>("Operational");
+  const [supplierId, setSupplierId] = useState("none");
+  const [saving, setSaving] = useState(false);
+
+  async function submit() {
+    if (!name.trim() || !serial.trim()) return toast.error("Name and serial number required");
+    setSaving(true);
+    try {
+      await createAsset({
+        name: name.trim(),
+        category: category.trim() || "General",
+        serial_number: serial.trim(),
+        status,
+        supplier_id: supplierId === "none" ? null : supplierId,
+      });
+      toast.success("Asset registered", { description: "audit_logs updated by trigger" });
+      setName("");
+      setSerial("");
+      setCategory("");
+      setOpen(false);
+    } catch (e) {
+      toast.error("Insert rejected", { description: (e as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><span /></DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader><DialogTitle className="text-[14px]">Register configuration item</DialogTitle></DialogHeader>
+        <div className="space-y-2">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Asset name" className="h-8 text-[12px]" />
+          <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category (HVAC, Laundry, Fleet…)" className="h-8 text-[12px]" />
+          <Input value={serial} onChange={(e) => setSerial(e.target.value)} placeholder="Serial number" className="h-8 font-mono text-[12px]" />
+          <Select value={status} onValueChange={(v) => setStatus(v as AssetStatus)}>
+            <SelectTrigger className="!h-8 text-[12px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ASSET_STATES.map((s) => (
+                <SelectItem key={s} value={s} className="text-[12px]">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={supplierId} onValueChange={setSupplierId}>
+            <SelectTrigger className="!h-8 text-[12px]"><SelectValue placeholder="Vendor" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none" className="text-[12px]">No vendor</SelectItem>
+              {suppliers.map((s) => (
+                <SelectItem key={s.id} value={s.id} className="text-[12px]">{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button size="sm" className="h-7 text-[12px]" onClick={submit} disabled={saving}>
+            {saving ? "Committing…" : "Commit to database"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
