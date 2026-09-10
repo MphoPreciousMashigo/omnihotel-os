@@ -17,6 +17,7 @@ import {
   type Asset,
   type AuditLog,
   type Ticket,
+  type TicketPriority,
 } from "@/lib/erp-db";
 
 /* cost model applied to live incident + asset rows */
@@ -142,8 +143,8 @@ export default function Financials({
               const open = tickets.filter((t) => t.priority === p && !isTerminal(t)).length;
               return (
                 <tr key={p} className="border-t border-border">
-                  <td className="px-2.5 py-1.5 font-medium">{SEVERITY[p as never].label}</td>
-                  <td className="px-2.5 py-1.5"><Mono>{SEVERITY[p as never].sla}m</Mono></td>
+                  <td className="px-2.5 py-1.5 font-medium">{SEVERITY[p as TicketPriority].label}</td>
+                  <td className="px-2.5 py-1.5"><Mono>{SEVERITY[p as TicketPriority].sla}m</Mono></td>
                   <td className="px-2.5 py-1.5"><Mono>{open}</Mono></td>
                   <td className="px-2.5 py-1.5"><Mono>{money(COST[p]!)}</Mono></td>
                   <td className="px-2.5 py-1.5"><Mono className="font-semibold">{money(open * COST[p]!)}</Mono></td>

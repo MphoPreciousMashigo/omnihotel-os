@@ -44,6 +44,12 @@ export type Ticket = {
   department: string;
   asset_id: string | null;
   supplier_id: string | null;
+  assigned_staff_id?: string | null;
+  /** camelCase SLA budget column in the database */
+  slaMinutes?: number | null;
+  sla_minutes?: number | null;
+  /** absolute epoch-ms deadline column, when present */
+  deadline?: number | null;
   created_at: string;
 };
 
@@ -87,7 +93,21 @@ export const SEVERITY: Record<TicketPriority, { code: string; label: string; sla
   Low: { code: "P4", label: "P4 · Low", sla: 1440 },
 };
 
+/** Minutes budgeted for this incident — the database "slaMinutes" column wins. */
+export function slaMinutes(t: Ticket) {
+  const raw = t.slaMinutes ?? t.sla_minutes;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : SEVERITY[t.priority].sla;
+}
+
 export function slaDeadline(t: Ticket) {
+  const raw = t.slaMinutes ?? t.sla_minutes;
+  const mins = Number(raw);
+  if (Number.isFinite(mins) && mins > 0) {
+    return new Date(t.created_at).getTime() + mins * 60_000;
+  }
+  const abs = Number(t.deadline);
+  if (Number.isFinite(abs) && abs > 1_000_000_000_000) return abs;
   return new Date(t.created_at).getTime() + SEVERITY[t.priority].sla * 60_000;
 }
 

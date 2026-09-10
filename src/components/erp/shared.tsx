@@ -18,7 +18,7 @@ export function StatusBadge({
 }: {
   tone: "critical" | "warn" | "ok" | "info" | "neutral";
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   const map: Record<string, string> = {
     critical: "bg-critical/12 text-critical border-critical/35",
@@ -127,7 +127,7 @@ export function SlaClock({
   const text = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   const tone = breach ? "critical" : ms < 30 * 60_000 ? "warn" : "ok";
   return (
-    <StatusBadge tone={tone as never} className={breach ? "animate-pulse" : undefined}>
+    <StatusBadge tone={tone} className={breach ? "animate-pulse" : ""}>
       {breach ? "−" : ""}
       {text}
     </StatusBadge>
