@@ -101,9 +101,14 @@ export function slaMinutes(t: Ticket) {
 }
 
 export function slaDeadline(t: Ticket) {
+  const raw = t.slaMinutes ?? t.sla_minutes;
+  const mins = Number(raw);
+  if (Number.isFinite(mins) && mins > 0) {
+    return new Date(t.created_at).getTime() + mins * 60_000;
+  }
   const abs = Number(t.deadline);
   if (Number.isFinite(abs) && abs > 1_000_000_000_000) return abs;
-  return new Date(t.created_at).getTime() + slaMinutes(t) * 60_000;
+  return new Date(t.created_at).getTime() + SEVERITY[t.priority].sla * 60_000;
 }
 
 export function isTerminal(t: Ticket) {
