@@ -44,6 +44,12 @@ export type Ticket = {
   department: string;
   asset_id: string | null;
   supplier_id: string | null;
+  assigned_staff_id?: string | null;
+  /** camelCase SLA budget column in the database */
+  slaMinutes?: number | null;
+  sla_minutes?: number | null;
+  /** absolute epoch-ms deadline column, when present */
+  deadline?: number | null;
   created_at: string;
 };
 
