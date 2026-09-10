@@ -93,8 +93,17 @@ export const SEVERITY: Record<TicketPriority, { code: string; label: string; sla
   Low: { code: "P4", label: "P4 · Low", sla: 1440 },
 };
 
+/** Minutes budgeted for this incident — the database "slaMinutes" column wins. */
+export function slaMinutes(t: Ticket) {
+  const raw = t.slaMinutes ?? t.sla_minutes;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : SEVERITY[t.priority].sla;
+}
+
 export function slaDeadline(t: Ticket) {
-  return new Date(t.created_at).getTime() + SEVERITY[t.priority].sla * 60_000;
+  const abs = Number(t.deadline);
+  if (Number.isFinite(abs) && abs > 1_000_000_000_000) return abs;
+  return new Date(t.created_at).getTime() + slaMinutes(t) * 60_000;
 }
 
 export function isTerminal(t: Ticket) {
