@@ -248,7 +248,10 @@ function CreateAssetDialog({
   const [saving, setSaving] = useState(false);
 
   async function submit() {
-    if (!name.trim() || !serial.trim()) return toast.error("Name and serial number required");
+    if (!name.trim() || !serial.trim()) {
+      toast.error("Name and serial number required");
+      return;
+    }
     setSaving(true);
     try {
       await createAsset({

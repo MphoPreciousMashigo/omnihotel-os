@@ -276,7 +276,10 @@ function NewIncident({
   const [saving, setSaving] = useState(false);
 
   async function submit() {
-    if (!title.trim()) return toast.error("Short description required");
+    if (!title.trim()) {
+      toast.error("Short description required");
+      return;
+    }
     setSaving(true);
     try {
       await createTicket({
