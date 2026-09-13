@@ -1,36 +1,44 @@
-# OmniHotel Hub (00)
+# 🏨 OmniHotel Enterprise OS (Hub 00)
 
-Build a complete enterprise-grade, single-page Hotel Operations ERP called “OmniHotel Enterprise.” Use React, Tailwind CSS, Lucide icons, and shadcn/ui. CRITICAL: implement as a dense high-performance SPA with one unified main tabbed layout using Tabs/TabsContent, not multiple route files. Include a slate enterprise header/body style and richly cross-linked hotel mock data.
+> **"A high-density, mission-critical Hotel Operations ERP platform designed to unify guest issue lifecycles, asset maintenance matrices, and procurement logistics under a single high-performance pane of glass."**
 
-Global shell: top bar with “OmniHotel OS” logo, property selector default “Grand Resort & Casino - Main”, global UUID search filtering tickets/assets/suppliers, and role selector (Admin, Operations Manager, Fleet Supervisor). Primary tabs: Executive Overview, Issue & Query Lifecycle, Asset & Fleet Tracking, Supplier & Procurement.
+---
 
-Overview: KPI grid with Active SLA Breaches, Fleet Utilization %, Critical Inventory Alerts, Pending PO Approvals. Live vertical audit stream with timestamped system events and 8-character UUIDs.
+## 👁️ The Architectural Vision
+Modern hospitality software is fragmented. Front-desk teams, facilities engineering, fleet management, and supply chain logistics usually operate on separate data silos, causing delayed resolution times and broken Service Level Agreements (SLAs).
 
-Issues: toggle Kanban versus dense table. Kanban stages Open, Assigned, In Progress, Pending Supplier/Parts, Resolved. Cards show #TCK-XXXX, priority badge, department, SLA countdown, staff ID. Card click opens Sheet with full details, linked suppliers, immutable event history.
+**OmniHotel Enterprise OS** solves this fragmentation by consolidating hotel operations into a dense, ultra-high-performance Single Page Application (SPA). By eliminating lazy-loaded routing barriers, the platform cross-links live tickets, physical infrastructure assets, and supplier directories within a shared relational state memory. 
 
-Assets: filterable dense table populated with Shuttle Vans, HVAC Units, Housekeeping Carts, Bulk Linen. Columns asset UUID/category/item/status/linked supplier/last inspection. Vehicle click opens “Log Mileage & Status” dialog and submission immediately appends to global audit stream.
+---
 
-Suppliers: vendor directory grid with 1-5 star reliability, contract status, active categories. Create Purchase Order button opens modal linking PO to specific Asset UUID or Ticket UUID.
+## 🛠️ The Full-Stack & Interface Blueprints
+This platform is engineered for data-dense corporate monitoring environments, prioritizing information density and rapid navigation:
 
-Make interactions functional locally, responsive, polished, ultra-dense with compact rows, crisp borders and high-contrast status badges.
+* **Core Stack:** React 19, TypeScript, Vite, and Tailwind CSS.
+* **UI Foundation:** Radix UI primitives (`@radix-ui/react-tabs`, `react-dialog`, components) styled with **shadcn/ui** frameworks.
+* **Visual Tracing:** Functional icon tagging via `lucide-react`.
+* **State & Performance Architecture:** Implemented as a single, unified main tabbed layout using standard `Tabs` and `TabsContent`. This architecture ensures zero route-file compilation overhead, 100% state preservation when clicking between modules, and instant client-side rendering.
 
-This project was built with [Lovable](https://lovable.dev).
+---
 
-## Build with Lovable
+## 🏎️ Core Operational Subsystems
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/5f9f6964-7d5d-4403-aa51-1cc065568349).
+### 1. 📊 Executive Overview Dashboard
+* **KPI Telemetry Grid:** Tracks live operational health vectors including Active SLA Breaches, Fleet Utilization %, Critical Inventory Alerts, and Pending PO Approvals.
+* **Live System Audit Stream:** A vertical ticker streaming atomic infrastructure and operational status changes in real-time, bound to unique 8-character UUID hash tags.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+### 2. 🎫 Issue & Query Lifecycle (Kanban vs. Dense Matrix)
+* **Dual-View Handler:** Dynamically toggles between a visual Kanban board and an high-density corporate data table.
+* **Stage Controls:** Tracks lifecycle mutations across *Open, Assigned, In Progress, Pending Supplier/Parts,* and *Resolved* boundaries.
+* **Deep Inspect Sheet:** Clicking any ticket card slides out an expansion drawer exposing linked vendor contractors, assigned staff telemetry, and an un-alterable incident history ledger.
 
-## Development
+### 3. 🚐 Asset & Fleet Tracking Engine
+* **Property Infrastructure Ledger:** Filterable dense logging system tracking heavy industrial appliances (HVAC Units), transport fleets (Shuttle Vans), and operational inventory (Housekeeping Carts, Bulk Linen).
+* **Live Maintenance Dialogue:** Clicking a transport asset opens an immediate "Log Mileage & Status" transaction module. Submitting the record appends the metadata straight into the global audit timeline instantly.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+### 4. 🤝 Supplier & Procurement Network
+* **Vendor Directory Grid:** Tracks asset suppliers cross-referenced by service categorization, compliance validity status, and historical 1-5 star reliability weightings.
+* **Targeted PO Component:** Generates customized Purchase Orders explicitly bound down to the specific Asset UUID or Ticket UUID that triggered the financial request.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+---
+*Designed and engineered by Mpho Precious Mashigo—redefining data-dense enterprise application resilience.*
