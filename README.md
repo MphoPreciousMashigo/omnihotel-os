@@ -1,4 +1,4 @@
-# 🏨 OmniHotel Enterprise OS (Hub 00)
+# 🏨 OmniHotel OS
 
 > **"A high-density, mission-critical Hotel Operations ERP platform designed to unify guest issue lifecycles, asset maintenance matrices, and procurement logistics under a single high-performance pane of glass."**
 
