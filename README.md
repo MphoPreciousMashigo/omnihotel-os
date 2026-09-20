@@ -36,7 +36,7 @@ This platform is engineered for data-dense corporate monitoring environments, pr
 * **Property Infrastructure Ledger:** Filterable dense logging system tracking heavy industrial appliances (HVAC Units), transport fleets (Shuttle Vans), and operational inventory (Housekeeping Carts, Bulk Linen).
 * **Live Maintenance Dialogue:** Clicking a transport asset opens an immediate "Log Mileage & Status" transaction module. Submitting the record appends the metadata straight into the global audit timeline instantly.
 
-### 4. 🤝 Supplier & Procurement Network
+### 4.  Supplier & Procurement Network
 * **Vendor Directory Grid:** Tracks asset suppliers cross-referenced by service categorization, compliance validity status, and historical 1-5 star reliability weightings.
 * **Targeted PO Component:** Generates customized Purchase Orders explicitly bound down to the specific Asset UUID or Ticket UUID that triggered the financial request.
 
